@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import hashlib
 import xml.etree.ElementTree as ET
+import time
 
 # try logging
 import logging
@@ -41,7 +42,20 @@ def receive_link(request):
     xml_tree = ET.fromstring(raw_data)
     content = xml_tree.find('Content').text
     from_user_name = xml_tree.find('FromUserName').text
+    to_user_name = xml_tree.find('ToUserName').text
     create_time = xml_tree.find('CreateTime').text
     logger.info(str(content) + ' ' + create_time + ' ' + from_user_name)
 
-    return HttpResponse("")
+
+    # Generate response
+    response_xml = respond(content, from_user_name, to_user_name, xml_tree)
+    return HttpResponse(response_xml)
+
+def respond(content, from_user_name, to_user_name, xml_tree):
+    #return HttpResponse("")
+    xml_tree.find('Content').text = 'Roger!'
+    xml_tree.find('FromUserName').text = to_user_name
+    xml_tree.find('ToUserName').text = from_user_name
+    #xml_tree.find('CreateTime').text = str(int(time.time() - 10))
+    response_xml = ET.tostring(xml_tree)
+    return response_xml
