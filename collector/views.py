@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import hashlib
+import xml.etree.ElementTree as ET
 
 # try logging
 import logging
@@ -21,9 +22,12 @@ def receive_link(request):
     paras = request.GET
 
     # Decide if the request is from Weixin
-    nonce = paras['nonce']
-    timestamp = paras['timestamp']
-    signature = paras['signature']
+    try:
+        nonce = paras['nonce']
+        timestamp = paras['timestamp']
+        signature = paras['signature']
+    except:
+        return HttpResponse("Goodbye!")
     token = 'wangguosai'
     parameters = sorted([nonce, timestamp, token])
     sha1 = hashlib.sha1(''.join(parameters)).hexdigest()
@@ -32,5 +36,12 @@ def receive_link(request):
     
     logger.info('Welcome here, Wechat!')
     
+    raw_data = request.body
+    #logger.info(str(raw_data))
+    xml_tree = ET.fromstring(raw_data)
+    content = xml_tree.find('Content').text
+    from_user_name = xml_tree.find('FromUserName').text
+    create_time = xml_tree.find('CreateTime').text
+    logger.info(str(content) + ' ' + create_time + ' ' + from_user_name)
 
-    return HttpResponse("Hello!")
+    return HttpResponse("")
