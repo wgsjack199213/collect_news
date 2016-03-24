@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import authenticate, login
+from collector.models import Article
+from django.utils import timezone
+
 import hashlib
 import xml.etree.ElementTree as ET
 import time
@@ -10,8 +13,10 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-# Create your views here.
+from parse import *
 
+
+# Create your views here.
 def index(request):
     logger.info(str(request))
 
@@ -66,18 +71,38 @@ def receive_link(request):
     logger.info(create_time + ' ' + str(content) + ' ' + from_user_name)
 
     # Parse the url and collect the data
-    parse_url() 
-    
+    if get_article(content, from_user_name, to_user_name, create_time) == -1:
+        message = 'New url cannot be parsed. But we have recorded it!'
+    else:
+        message = 'Success!'
 
     # Generate response
-    response_xml = respond(content, from_user_name, to_user_name, xml_tree)
+    response_xml = respond(message, from_user_name, to_user_name, xml_tree)
     return HttpResponse(response_xml)
 
-def respond(content, from_user_name, to_user_name, xml_tree):
+def respond(message, from_user_name, to_user_name, xml_tree):
     #return HttpResponse("")
-    xml_tree.find('Content').text = 'Roger!'
+    xml_tree.find('Content').text = message
     xml_tree.find('FromUserName').text = to_user_name
     xml_tree.find('ToUserName').text = from_user_name
     #xml_tree.find('CreateTime').text = str(int(time.time() - 10))
     response_xml = ET.tostring(xml_tree)
     return response_xml
+
+
+def get_article(url, from_user_name, to_user_name, create_time):
+    article = parse_url(url)
+    if article == -1:
+        return -1   
+ 
+    logger.info(str(article))
+
+    a = Article(source=article['source'], url=article['url'], \
+                content=article['content'], title=article['title'], \
+                title2=article['title2'], timestamp=int(time.time()), \
+                pub_date=timezone.now())
+    a.save()
+
+    return
+    
+     

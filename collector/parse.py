@@ -39,19 +39,19 @@ def match_rule(url):
 
 
     
-def parse_url(url, fout):
+def parse_url(url, fout=None):
     print 'Now parse the url: ' + url
 
     try:
         source, tag_name, class_name = match_rule(url)
     except Exception as e:
         print e
-        return
+        return -1
 
 
     r = requests.get(url)
     html_doc = r.text
-    soup = BeautifulSoup(html_doc)
+    soup = BeautifulSoup(html_doc, "html.parser")
 
     csv_source = source
 
@@ -73,13 +73,17 @@ def parse_url(url, fout):
         # try to remove the <p> tags
         csv_content += line.get_text() + '\n'
 
-    fout.write("\"")
-    for x in [csv_source, url, csv_title, csv_title2, csv_content]:
-        fout.write(x + "\",\"")
-    fout.write("\"\r")
-
-    print '==================='
-    return
+    if not fout == None:
+        fout.write("\"")
+        for x in [csv_source, url, csv_title, csv_title2, csv_content]:
+            fout.write(x + "\",\"")
+        fout.write("\"\r")
+        print '==================='
+        return
+    else:
+        article = {'source': csv_source, 'url': url, 'title': csv_title,\
+                'title2': csv_title2, 'content': csv_content}
+        return article
 
 
 if __name__ == '__main__':
@@ -103,7 +107,6 @@ if __name__ == '__main__':
     #t = u'中国人'
     #f.write(codecs.BOM_UTF8)
     #f.write('\xEF\xBB\xBF');
-    #f.write("傻逼,哈哈哈")
 
     #fout = open('csv_test.csv', 'w')
 
