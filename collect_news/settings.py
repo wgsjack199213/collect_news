@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'collector.apps.CollectorConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,7 +82,6 @@ DATABASES = {
     }
 }
 
-TIME_ZONE = 'Asia/Shanghai'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -105,9 +105,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+#LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-cn'
 
-TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
+
 
 USE_I18N = True
 
@@ -120,6 +123,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 LOGGING = {
     'version': 1,
@@ -130,6 +134,11 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': '/home/wgs/django_logs/debug.log',
         },
+        'collector_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/home/wgs/django_logs/collector.log',
+        },
     },
     'loggers': {
         'django': {
@@ -138,7 +147,7 @@ LOGGING = {
             'propagate': True,
         },
         'collector': {
-            'handlers': ['file'],
+            'handlers': ['collector_file'],
             'level': 'DEBUG',
         },
     },
